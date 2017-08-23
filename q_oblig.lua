@@ -1,4 +1,4 @@
-t_sleep = 5000 --спим по 5 секунд
+t_sleep = 2000 --спим по столько миллисекунд
 
 aggressive = false --агрессивно - значит всегда ставить свои заявки перед другими, даже перед маленькими
 
@@ -25,8 +25,8 @@ function OnInit(script_path)
 	t_q = 1
 	
 	--ключевые уровни
-	BUY_LEVEL = 99.05
-	SELL_LEVEL = 99.40
+	BUY_LEVEL = 00.10
+	SELL_LEVEL = 00.20
 
 	if BUY_LEVEL>SELL_LEVEL then
 		message("Заданны некорректные уровни!")
@@ -133,15 +133,23 @@ function logic()
 			order = orders.buy[i]
 			if (order.price ~= buy_level) then--or (order.balance ~= q) then
 				cancel_order(order)
+			elseif (order.balance < t_q) then
+				q = math.min(can_buy, math.abs(t_q-p_b))
+				if q>0 then
+					buy(order.price, q)
+				end
 			end
 		end
 		--проверка заявок на продажу
 		for i=1,#orders.sell do
 			order = orders.sell[i]
 			if (order.price ~= sell_level) then--or (order.balance ~= q) then
-				message("sell_level: "..sell_level.."\nprice: "..order.price)
-				sleep(350)
 				cancel_order(order)
+			elseif (order.balance < t_q) then
+				q = math.min(can_sell, math.abs(p_b))
+				if q>0 then
+					sell(order.price, q)
+				end
 			end
 		end
 		--восстановление заявок при необходимости
